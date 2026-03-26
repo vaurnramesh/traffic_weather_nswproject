@@ -29,3 +29,34 @@ class WeatherApiClient:
             precipitation_prob=curr['precipitation_probability'],
             metadata=AuditMetadata(is_forecast=False)
         )
+    
+
+    def fetch_hourly_forecast(self, location: Location, days: int = 1) -> list[WeatherObservation]:
+
+        params = {
+        "latitude": location.latitude,
+        "longitude": location.longitude,
+        "hourly": ["temperature_2m", "wind_gusts_10m", "rain", "precipitation_probability"],
+        "timezone": "Australia/Sydney",
+        "forecast_days": days
+        }
+        
+        response = requests.get(self.base_url, params=params)
+        data = response.json()['hourly']
+        response.raise_for_status()
+        
+        observations = []
+
+        for i in range(len(data['time'])):
+            obs = WeatherObservation(
+                location_name=location.name,
+                timestamp=data['time'][i],
+                temp_c=data['temperature_2m'][i],
+                wind_gust_kmh=data['wind_gusts_10m'][i],
+                rain_mm=data['rain'][i],
+                precipitation_prob=data['precipitation_probability'][i],
+                metadata=AuditMetadata(is_forecast=True)
+            )
+            observations.append
+        
+        return observations

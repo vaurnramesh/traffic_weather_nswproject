@@ -15,9 +15,9 @@ class BikeStyle(Enum):
         """
         factors = {
             BikeStyle.CRUISER: 1.0,
-            BikeStyle.ADVENTURE: 1.1,
-            BikeStyle.FULL_FAIRED: 1.3,
-            BikeStyle.NAKED: 1.5
+            BikeStyle.ADVENTURE: 1.08,
+            BikeStyle.FULL_FAIRED: 1.17,
+            BikeStyle.NAKED: 1.27
         }
         return factors.get(self, 1.0)
     
