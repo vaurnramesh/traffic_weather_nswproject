@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from src.models.route import Trip
 from src.models.bike import BikeProfile
 from src.models.evaluation import RideEvaluation
@@ -14,21 +14,40 @@ class RideService:
         Loops through all points in a trip and generates a safety report.
         """
 
-        evaluations = []
+        location_reports = []
 
         for location in trip.get_all_points():
-
             weather_data = self.client.fetch_current_weather(location)
+            analysis = calculate_ride_score(bike, weather_data)
+            verdict = "SEND IT" if analysis.score >= 7.5 else "CAUTION" if analysis.score >= 5 else "STAY HOME"
 
-            score = calculate_ride_score(bike, weather_data)
-
-            verdict = "SEND IT" if score >= 7.5 else "CAUTION" if score >= 5 else "STAY HOME"
-
-            evaluations.append(RideEvaluation(
+            location_reports.append(RideEvaluation(
                 location_name=location.name,
-                score=score,
                 weather=weather_data,
-                verdict=verdict
+                verdict=verdict,
+                analysis=analysis
             ))
             
-        return evaluations
+        return location_reports
+    
+    def evaluate_trip_forecast(self, trip: Trip, bike: BikeProfile) -> Dict[str, List[RideEvaluation]]:
+        
+        forecast_matrix = {}
+
+        for location in trip.get_all_points():
+            location_reports = []
+            hourly_weather = self.client.fetch_hourly_forecast(location, 1)
+            
+            for weather_data in hourly_weather:
+                analysis = calculate_ride_score(bike, weather_data)
+                verdict = "SEND IT" if analysis.score >= 7.5 else "CAUTION" if analysis.score >= 5 else "STAY HOME"
+
+                location_reports.append(RideEvaluation(
+                    location_name=location.name,
+                    weather=weather_data,
+                    verdict=verdict,
+                    analysis=analysis
+                ))
+            forecast_matrix[location.name] = location_reports
+
+        return forecast_matrix

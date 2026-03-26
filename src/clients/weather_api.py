@@ -31,7 +31,7 @@ class WeatherApiClient:
         )
     
 
-    def fetch_hourly_forecast(self, location: Location, days: int = 1) -> list[WeatherObservation]:
+    def fetch_hourly_forecast(self, location: Location, days: int) -> list[WeatherObservation]:
 
         params = {
         "latitude": location.latitude,
@@ -42,8 +42,8 @@ class WeatherApiClient:
         }
         
         response = requests.get(self.base_url, params=params)
-        data = response.json()['hourly']
         response.raise_for_status()
+        data = response.json()['hourly']
         
         observations = []
 
@@ -57,6 +57,6 @@ class WeatherApiClient:
                 precipitation_prob=data['precipitation_probability'][i],
                 metadata=AuditMetadata(is_forecast=True)
             )
-            observations.append
+            observations.append(obs)
         
         return observations
